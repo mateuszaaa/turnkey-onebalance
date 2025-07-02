@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useTurnkeyAuth } from "../turnkey/use-turnkey-auth";
 import { ClientLogin } from "./client-login";
 import { ClientOnly } from "./client-only";
+import Auth from "@/components/auth"
 
 export const Login = () => {
   const { isUserLoading, refreshAuthStatus } = useTurnkeyAuth();
@@ -118,6 +119,7 @@ export const Login = () => {
         </div>
       </div>
       <div className="flex-1" />
+      <Auth />
     </div>
   );
 };
