@@ -14,11 +14,9 @@ export const fetchSupportedChains = ({
   apiKey: string;
   apiUrl: string;
 }): Promise<Chain[]> => {
-  const url = new URL("/api/chains/supported-list", apiUrl);
-
-  return fetch(url, {
+  return fetch("/api/chains/supported-list", {
     headers: {
-      "x-api-key": apiKey,
+      "Content-Type": "application/json",
     },
   }).then(async (response) => {
     if (!response.ok) throw await response.json();

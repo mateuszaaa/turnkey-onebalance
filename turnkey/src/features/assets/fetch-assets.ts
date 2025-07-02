@@ -7,11 +7,9 @@ export const fetchAssets = ({
   apiUrl: string;
   apiKey: string;
 }): Promise<Asset[]> => {
-  const url = new URL(`/api/assets/list`, apiUrl);
-
-  return fetch(url, {
+  return fetch("/api/assets/list", {
     headers: {
-      "x-api-key": apiKey,
+      "Content-Type": "application/json",
     },
   }).then(async (response) => {
     if (!response.ok) throw await response.json();
