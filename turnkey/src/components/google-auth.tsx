@@ -16,7 +16,7 @@ import { env } from "@/env.mjs"
 import { Skeleton } from "./ui/skeleton"
 
 const GoogleAuth = () => {
-  const { indexedDbClient } = useTurnkey()
+  const { client, indexedDbClient } = useTurnkey()
   const clientId = env.NEXT_PUBLIC_GOOGLE_OAUTH_CLIENT_ID
 
   const [nonce, setNonce] = useState("")
@@ -25,6 +25,7 @@ const GoogleAuth = () => {
   useEffect(() => {
     const getPublicKey = async () => {
       const publicKey = await indexedDbClient?.getPublicKey()
+      console.log("BLAH PUB", publicKey)
 
       if (publicKey) {
         const hashedPublicKey = sha256(publicKey as `0x${string}`).replace(
@@ -43,7 +44,10 @@ const GoogleAuth = () => {
     console.log("BLAH1")
     if (credentialResponse.credential) {
       console.log("BLAH2", credentialResponse.credential)
-      loginWithGoogle(credentialResponse.credential as string)
+      const x = loginWithGoogle(credentialResponse.credential as string)
+      const publicKey = indexedDbClient?.getPublicKey()
+      console.log("BLAH PUB 22", publicKey);
+      console.log("BLAH PUB 22", x);
     }
   }
 

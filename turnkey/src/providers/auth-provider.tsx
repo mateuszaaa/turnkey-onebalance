@@ -364,24 +364,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const loginWithOAuth = async (credential: string, providerName: string) => {
+    console.log("[OAuth Login] Starting OAuth login flow", { providerName })
     dispatch({ type: "LOADING", payload: true })
     try {
+      console.log("[OAuth Login] Getting public key from IndexedDB client")
       const publicKeyCompressed = await indexedDbClient?.getPublicKey()
 
       if (!publicKeyCompressed) {
+        console.error("[OAuth Login] No public key found in IndexedDB")
         throw new Error("No public key found")
       }
+      console.log("[OAuth Login] Got compressed public key:", publicKeyCompressed.substring(0, 20) + "...")
 
+      console.log("[OAuth Login] Converting public key to uncompressed format")
       const publicKey = toHex(
         uncompressRawPublicKey(
           new Uint8Array(Buffer.from(publicKeyCompressed, "hex"))
         )
       ).replace("0x", "")
+      console.log("[OAuth Login] Uncompressed public key:", publicKey.substring(0, 20) + "...")
 
       // Determine if the user has a sub-organization associated with their email
+      console.log("[OAuth Login] Checking for existing sub-organization")
       let subOrgId = await getSubOrgId({ oidcToken: credential })
+      console.log("[OAuth Login] Existing sub-org ID:", subOrgId)
 
       if (!subOrgId) {
+        console.log("[OAuth Login] No existing sub-org found, creating new one")
         // User does not have a sub-organization associated with their email
         // Create a new sub-organization for the user
         const { subOrg } = await createUserSubOrg({
@@ -391,20 +400,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           },
         })
         subOrgId = subOrg.subOrganizationId
+        console.log("[OAuth Login] Created new sub-org with ID:", subOrgId)
       }
 
       // Note: You need to use the compressed public key here because when the
       // indexedDbClient stamps the request and the key is compared in the backend it expects the compressed version
+      console.log("[OAuth Login] Calling OAuth API with:", {
+        hasCredential: !!credential,
+        hasPublicKey: !!publicKeyCompressed,
+        subOrgId,
+      })
       const oauthResponse = await oauth({
         credential,
         publicKey: publicKeyCompressed,
         subOrgId,
       })
+      console.log("[OAuth Login] OAuth API response:", {
+        hasSession: !!oauthResponse.session,
+        sessionLength: oauthResponse.session?.length,
+      })
 
+      console.log("[OAuth Login] Logging in with session")
       await indexedDbClient?.loginWithSession(oauthResponse.session)
 
+      console.log("[OAuth Login] Successfully logged in, redirecting to dashboard")
       router.push("/dashboard")
     } catch (error: any) {
+      console.error("[OAuth Login] Error during OAuth login:", error)
+      console.error("[OAuth Login] Error stack:", error.stack)
       dispatch({ type: "ERROR", payload: error.message })
     } finally {
       dispatch({ type: "LOADING", payload: false })
@@ -412,6 +435,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const loginWithGoogle = async (credential: string) => {
+    console.log("BLAHBLAH GOOGLE")
+    console.log("[Google Login] Starting Google OAuth login", {
+      credentialLength: credential?.length,
+      credentialPreview: credential?.substring(0, 50) + "..."
+    })
     await loginWithOAuth(credential, "Google Auth - Embedded Wallet")
   }
 

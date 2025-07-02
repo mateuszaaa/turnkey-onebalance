@@ -160,8 +160,8 @@ function AuthContent() {
           </Form>
           <OrSeparator />
           <GoogleAuth />
-          <AppleAuth />
-          <FacebookAuth />
+          {/*TODO: fix <AppleAuth /> */}
+          {/*TODO: fix <FacebookAuth /> */}
         </CardContent>
       </Card>
       <Legal />
