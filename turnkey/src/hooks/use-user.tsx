@@ -16,6 +16,7 @@ export const useUser = () => {
         // Try and get the current user
 
         const token = await turnkey.getSession()
+        console.log("BLAH", token)
 
         // If the user is not found, we assume the user is not logged in
         if (!token?.expiry || token.expiry > Date.now()) {

@@ -40,7 +40,9 @@ const GoogleAuth = () => {
   }, [indexedDbClient])
 
   const onSuccess = (credentialResponse: CredentialResponse) => {
+    console.log("BLAH1")
     if (credentialResponse.credential) {
+      console.log("BLAH2", credentialResponse.credential)
       loginWithGoogle(credentialResponse.credential as string)
     }
   }

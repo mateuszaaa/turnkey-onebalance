@@ -51,7 +51,7 @@ function AuthContent() {
 
   useEffect(() => {
     if (user) {
-      router.push("/dashboard")
+      // router.push("/dashboard")
     }
   }, [user, router])
 

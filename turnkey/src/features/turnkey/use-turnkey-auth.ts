@@ -11,14 +11,14 @@ export type TurnkeyPasskeyClient = NonNullable<
 >;
 
 export const useTurnkeyAuth = () => {
-  const { turnkey, passkeyClient } = useTurnkey();
+  const { indexedDbClient, turnkey, passkeyClient } = useTurnkey();
   console.log("[useTurnkeyAuth] Turnkey SDK initialized:", !!turnkey);
   console.log("[useTurnkeyAuth] Passkey client initialized:", !!passkeyClient);
   
   const { mutate: logout } = useMutation({
     mutationFn: (_turnkey: TurnkeyBrowserSDK) => {
       console.log("[useTurnkeyAuth] Logging out user");
-      return _turnkey.logoutUser();
+      return _turnkey.logout();
     },
     onSuccess: () => {
       console.log("[useTurnkeyAuth] Logout successful, invalidating queries");
@@ -36,7 +36,7 @@ export const useTurnkeyAuth = () => {
     queryFn: async () => {
       console.log("[useTurnkeyAuth] Fetching current user...");
       try {
-        const result = await turnkey!.getCurrentUser();
+        const result = await turnkey!.getSession();
         console.log("[useTurnkeyAuth] Current user result:", result);
         return result ?? null;
       } catch (error) {
@@ -52,10 +52,10 @@ export const useTurnkeyAuth = () => {
     queryFn: async () => {
       console.log("[useTurnkeyAuth] Fetching wallets...");
       try {
-        const currentUserSession = await turnkey!.currentUserSession();
+        const currentUserSession = await turnkey!.getSession();
         console.log("[useTurnkeyAuth] Current user session:", !!currentUserSession);
         
-        const wallets = await currentUserSession!.getWallets();
+        const wallets = await indexedDbClient!.getWallets();
         console.log("[useTurnkeyAuth] Fetched wallets:", wallets);
         
         const walletsWithAccounts = await Promise.all(
@@ -63,7 +63,7 @@ export const useTurnkeyAuth = () => {
             .map((wallet) => wallet.walletId)
             .map(async (walletId) => {
               console.log("[useTurnkeyAuth] Fetching accounts for wallet:", walletId);
-              const accounts = await currentUserSession!.getWalletAccounts({
+              const accounts = await indexedDbClient!.getWalletAccounts({
                 walletId,
               });
               console.log("[useTurnkeyAuth] Wallet accounts:", accounts);
