@@ -36,6 +36,9 @@ export default function Home() {
                       <Balances
                         rootOrgId={process.env.PUBLIC_TURNKEY_ORGANIZATION_ID!}
                       />
+                      <Balances
+                        rootOrgId={process.env.PUBLIC_TURNKEY_ORGANIZATION_ID!}
+                      />
                     </Tabs.Content>
                     <Tabs.Content value="swap">
                       <Swap />
