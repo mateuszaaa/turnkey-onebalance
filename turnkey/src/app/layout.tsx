@@ -1,5 +1,5 @@
 import { ReactQueryProvider } from "@/features/react-query";
-import { TurnkeyProvider } from "@turnkey/sdk-react";
+import { Providers } from "@/providers";
 import type { Metadata } from "next";
 import "./globals.css";
 import { WarningDialogProvider } from "@/features/warning-dialog";
@@ -18,18 +18,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`antialiased`}>
-        <TurnkeyProvider
-          config={{
-            rpId: process.env.PUBLIC_TURNKEY_RP_ID,
-            apiBaseUrl: "https://api.turnkey.com",
-            iframeUrl: "https://auth.turnkey.com",
-            defaultOrganizationId: process.env.PUBLIC_TURNKEY_ORGANIZATION_ID!,
-          }}
-        >
+        <Providers>
           <ReactQueryProvider>
             <WarningDialogProvider>{children}</WarningDialogProvider>
           </ReactQueryProvider>
-        </TurnkeyProvider>
+        </Providers>
       </body>
     </html>
   );

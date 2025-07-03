@@ -247,7 +247,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           },
         })
 
-        router.push("/dashboard")
+        router.push("/")
       } catch (error: any) {
         console.error("[completeEmailAuth] Error:", error)
         dispatch({ type: "ERROR", payload: error.message })
@@ -270,7 +270,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           publicKey,
         })
 
-        router.push("/dashboard")
+        router.push("/")
       } else {
         // User either does not have an account with a sub organization
         // or does not have a passkey
@@ -311,7 +311,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               )
             )
 
-            router.push("/dashboard")
+            router.push("/")
           }
         }
       }
@@ -355,7 +355,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         sessionType: SessionType.READ_WRITE,
       })
 
-      router.push("/dashboard")
+      router.push("/")
     } catch (error: any) {
       dispatch({ type: "ERROR", payload: error.message })
     } finally {
@@ -367,7 +367,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     console.log("[OAuth Login] Starting OAuth login flow", { providerName })
     dispatch({ type: "LOADING", payload: true })
     try {
-      console.log("[OAuth Login] Getting public key from IndexedDB client")
+      console.log("[OAuth Login] Getting existing public key from IndexedDB client")
       const publicKeyCompressed = await indexedDbClient?.getPublicKey()
 
       if (!publicKeyCompressed) {
@@ -389,8 +389,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       let subOrgId = await getSubOrgId({ oidcToken: credential })
       console.log("[OAuth Login] Existing sub-org ID:", subOrgId)
 
+      if (subOrgId) {
+        console.log("[OAuth Login] Sub-org exists but we have a new public key - this will create a conflict")
+        console.log("[OAuth Login] For OAuth login, we'll create a new sub-org with the current key pair")
+        // Force creation of new sub-org with current public key
+        subOrgId = null
+      }
+
       if (!subOrgId) {
-        console.log("[OAuth Login] No existing sub-org found, creating new one")
+        console.log("[OAuth Login] Creating new sub-org for this Google account")
         // User does not have a sub-organization associated with their email
         // Create a new sub-organization for the user
         const { subOrg } = await createUserSubOrg({
@@ -423,8 +430,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("[OAuth Login] Logging in with session")
       await indexedDbClient?.loginWithSession(oauthResponse.session)
 
-      console.log("[OAuth Login] Successfully logged in, redirecting to dashboard")
-      router.push("/dashboard")
+      // Force a small delay to ensure session is properly set
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      console.log("[OAuth Login] Verifying session after login")
+      const verifySession = await turnkey?.getSession()
+      console.log("[OAuth Login] Session verification result:", verifySession)
+
+      // Force refresh of authentication state
+      console.log("[OAuth Login] Triggering authentication state refresh")
+      window.dispatchEvent(new Event('turnkey-session-updated'))
+      
+      console.log("[OAuth Login] Successfully logged in, redirecting to home")
+      router.push("/")
     } catch (error: any) {
       console.error("[OAuth Login] Error during OAuth login:", error)
       console.error("[OAuth Login] Error stack:", error.stack)
@@ -435,12 +453,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const loginWithGoogle = async (credential: string) => {
-    console.log("BLAHBLAH GOOGLE")
+    console.log("[Google Login] ===== STARTING GOOGLE LOGIN =====")
+    console.log("[Google Login] Dependencies check:", {
+      hasIndexedDbClient: !!indexedDbClient,
+      hasTurnkey: !!turnkey,
+      hasRouter: !!router,
+      hasDispatch: !!dispatch
+    })
     console.log("[Google Login] Starting Google OAuth login", {
       credentialLength: credential?.length,
       credentialPreview: credential?.substring(0, 50) + "..."
     })
-    await loginWithOAuth(credential, "Google Auth - Embedded Wallet")
+    
+    if (!indexedDbClient) {
+      console.error("[Google Login] IndexedDB client not available")
+      return
+    }
+    
+    try {
+      console.log("[Google Login] About to call loginWithOAuth")
+      await loginWithOAuth(credential, "Google Auth - Embedded Wallet")
+      console.log("[Google Login] ===== OAUTH FLOW COMPLETED SUCCESSFULLY =====")
+    } catch (error) {
+      console.error("[Google Login] ===== OAUTH FLOW FAILED =====")
+      console.error("[Google Login] OAuth flow failed:", error)
+      throw error
+    }
   }
 
   const loginWithApple = async (credential: string) => {

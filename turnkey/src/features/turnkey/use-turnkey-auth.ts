@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTurnkey } from "@turnkey/sdk-react";
 import { queryClient } from "../react-query";
@@ -46,6 +47,19 @@ export const useTurnkeyAuth = () => {
     },
     enabled: !!turnkey,
   });
+
+  // Listen for session updates and refetch authentication state
+  useEffect(() => {
+    const handleSessionUpdate = () => {
+      console.log("[useTurnkeyAuth] Session update event received, refetching auth state");
+      refetch();
+    };
+
+    window.addEventListener('turnkey-session-updated', handleSessionUpdate);
+    return () => {
+      window.removeEventListener('turnkey-session-updated', handleSessionUpdate);
+    };
+  }, [refetch]);
 
   const { data: wallets } = useQuery({
     queryKey: ["wallets"],
