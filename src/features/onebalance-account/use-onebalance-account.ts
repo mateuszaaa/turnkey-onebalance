@@ -12,6 +12,7 @@ export const useEmbeddedWallet = () => {
   console.log("[useEmbeddedWallet] Wallets:", wallets);
   const wallet = wallets?.[0];
   console.log("[useEmbeddedWallet] Selected wallet:", wallet);
+  console.log("[useEmbeddedWallet] Selected wallet address:", wallet?.address);
   return wallet;
 };
 

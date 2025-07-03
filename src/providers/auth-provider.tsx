@@ -389,13 +389,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       let subOrgId = await getSubOrgId({ oidcToken: credential })
       console.log("[OAuth Login] Existing sub-org ID:", subOrgId)
 
-      if (subOrgId) {
-        console.log("[OAuth Login] Sub-org exists but we have a new public key - this will create a conflict")
-        console.log("[OAuth Login] For OAuth login, we'll create a new sub-org with the current key pair")
-        // Force creation of new sub-org with current public key
-        subOrgId = null
-      }
-
+      // if (subOrgId) {
+      //   console.log("[OAuth Login] Sub-org exists but we have a new public key - this will create a conflict")
+      //   console.log("[OAuth Login] For OAuth login, we'll create a new sub-org with the current key pair")
+      //   // Force creation of new sub-org with current public key
+      //   subOrgId = null
+      // }
+      //
       if (!subOrgId) {
         console.log("[OAuth Login] Creating new sub-org for this Google account")
         // User does not have a sub-organization associated with their email
