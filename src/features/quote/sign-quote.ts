@@ -8,8 +8,9 @@ import {
   serializeSignature,
   toHex,
 } from "viem";
-import { TurnkeyPasskeyClient } from "../turnkey/use-turnkey-auth";
+import { TurnkeyPasskeyClient, TurnkeyIndexDBClient } from "../turnkey/use-turnkey-auth";
 import { Quote } from "./quote";
+import { TurnkeyBrowserClient } from "@turnkey/sdk-browser";
 
 export const signQuoteWithSigner = (
   signHashes: (hashes: Hash[]) => Promise<Hex[]>
@@ -44,12 +45,12 @@ export const signQuoteWithSigner = (
 
 const signTypedDataWithTurnkey =
   (
-    passkeyClient: TurnkeyPasskeyClient,
+    indexedDbClient: TurnkeyIndexDBClient,
     address: Address,
     organizationId: string
   ) =>
   async (hashes: Hash[]): Promise<Hex[]> => {
-    const signed = await passkeyClient.signRawPayloads({
+    const signed = await indexedDbClient.signRawPayloads({
       payloads: hashes,
       signWith: address,
       encoding: "PAYLOAD_ENCODING_HEXADECIMAL",
@@ -66,12 +67,12 @@ const signTypedDataWithTurnkey =
   };
 
 export const signQuoteWithTurnkeySigner = (
-  passkeyClient: TurnkeyPasskeyClient,
+  indexedDbClient: TurnkeyIndexDBClient,
   address: Address,
   organizationId: string
 ) =>
   signQuoteWithSigner((hashes) =>
-    signTypedDataWithTurnkey(passkeyClient, address, organizationId)(hashes)
+    signTypedDataWithTurnkey(indexedDbClient, address, organizationId)(hashes)
   );
 
 const serializeTurnkeySignature = (signature: {

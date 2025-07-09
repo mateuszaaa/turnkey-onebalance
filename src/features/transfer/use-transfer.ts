@@ -56,19 +56,16 @@ export const useTransfer = () => {
 
 const useTransferMutation = () => {
   const embeddedWallet = useEmbeddedWallet();
-  const { passkeyClient } = useTurnkey();
+  const { indexedDbClient } = useTurnkey();
   const { apiKey, apiUrl } = useEnvironment();
 
   return useMutation({
     mutationFn: async (request: TransferRequest) => {
       if (!embeddedWallet) throw new Error("No embedded wallet found");
 
-      const quote = await fetchTransferQuote(request, {
-        apiKey,
-        apiUrl,
-      });
+      const quote = await fetchTransferQuote(request);
       const signedQuote = await signQuoteWithTurnkeySigner(
-        passkeyClient!,
+        indexedDbClient!,
         embeddedWallet.address as Address,
         embeddedWallet.organizationId
       )(quote);

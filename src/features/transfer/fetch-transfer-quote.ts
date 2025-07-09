@@ -13,23 +13,13 @@ export interface TransferRequest {
 }
 
 export const fetchTransferQuote = (
-  transferRequest: TransferRequest,
-  {
-    apiKey,
-    apiUrl,
-  }: {
-    apiKey: string;
-    apiUrl: string;
-  }
+  transferRequest: TransferRequest
 ): Promise<Quote> => {
-  const url = new URL("/api/quotes/transfer-quote", apiUrl);
-
-  return fetch(url, {
+  return fetch("/api/transfer-quote", {
     method: "post",
     body: JSON.stringify(transferRequest),
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": apiKey,
     },
   }).then(async (response) => {
     if (!response.ok) throw await response.json();

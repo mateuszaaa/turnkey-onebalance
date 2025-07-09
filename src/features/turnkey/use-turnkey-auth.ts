@@ -10,9 +10,15 @@ type TurnkeyBrowserSDK = NonNullable<ReturnType<typeof useTurnkey>["turnkey"]>;
 export type TurnkeyPasskeyClient = NonNullable<
   ReturnType<typeof useTurnkey>["passkeyClient"]
 >;
+export type TurnkeyIndexDBClient = NonNullable<
+  ReturnType<typeof useTurnkey>["indexedDbClient"]
+>;
 
 export const useTurnkeyAuth = () => {
+  console.log("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
   const { indexedDbClient, turnkey, passkeyClient } = useTurnkey();
+  console.log("XXXXXXXXXXXXX", indexedDbClient)
+  console.log("XXXXXXXXXXXXX", passkeyClient)
   console.log("[useTurnkeyAuth] Turnkey SDK initialized:", !!turnkey);
   console.log("[useTurnkeyAuth] Passkey client initialized:", !!passkeyClient);
   
@@ -69,7 +75,7 @@ export const useTurnkeyAuth = () => {
         const currentUserSession = await turnkey!.getSession();
         console.log("[useTurnkeyAuth] Current user session:", !!currentUserSession);
         
-        const wallets = await indexedDbClient!.getWallets();
+        const wallets = await indexedDbClient!.getWallets(currentUserSession?.organizationId);
         console.log("[useTurnkeyAuth] Fetched wallets:", wallets);
         
         const walletsWithAccounts = await Promise.all(
