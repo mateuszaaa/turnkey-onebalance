@@ -69,10 +69,7 @@ const useTransferMutation = () => {
         embeddedWallet.address as Address,
         embeddedWallet.organizationId
       )(quote);
-      const executionResult = await executeQuote(signedQuote as any, {
-        apiKey,
-        apiUrl,
-      });
+      const executionResult = await executeQuote(signedQuote as any);
       return {
         result: executionResult,
         quoteId: quote.id,
