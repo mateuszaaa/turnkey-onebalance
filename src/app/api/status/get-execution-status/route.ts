@@ -1,0 +1,65 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const quoteId = searchParams.get('quoteId');
+
+    if (!quoteId) {
+      return NextResponse.json(
+        { error: 'Missing quoteId parameter' },
+        { status: 400 }
+      );
+    }
+
+    const apiKey = process.env.PUBLIC_ONEBALANCE_API_KEY;
+    const apiUrl = process.env.PUBLIC_ONEBALANCE_API;
+
+    if (!apiKey || !apiUrl) {
+      return NextResponse.json(
+        { error: 'Missing API configuration' },
+        { status: 500 }
+      );
+    }
+
+    const response = await fetch(`${apiUrl}/api/status/get-execution-status?quoteId=${quoteId}`, {
+      method: 'GET',
+      headers: {
+        'x-api-key': apiKey,
+      },
+    });
+
+    if (!response.ok) {
+      const contentType = response.headers.get('content-type');
+      let error;
+      if (contentType && contentType.includes('application/json')) {
+        error = await response.json();
+      } else {
+        const text = await response.text();
+        error = { message: text, status: response.status };
+      }
+      return NextResponse.json(error, { status: response.status });
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Proxy error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': 'http://localhost:3000',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'x-api-key, Content-Type',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}
